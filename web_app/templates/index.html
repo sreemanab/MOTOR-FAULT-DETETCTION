@@ -1,0 +1,193 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <title>MotorSense AI — Fault Detection</title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link href="https://fonts.googleapis.com/css2?family=Share+Tech+Mono&family=Rajdhani:wght@300;400;500;600;700&family=Orbitron:wght@400;700;900&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+
+<div class="scan-line"></div>
+<div class="grid-bg"></div>
+<div class="corner top-left"></div>
+<div class="corner top-right"></div>
+<div class="corner bottom-left"></div>
+<div class="corner bottom-right"></div>
+
+<div class="wrapper">
+
+    <header class="header">
+        <div class="logo-row">
+            <div class="logo-icon">
+                <svg viewBox="0 0 40 40" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <circle cx="20" cy="20" r="18" stroke="#00f5d4" stroke-width="1.5" stroke-dasharray="4 2"/>
+                    <circle cx="20" cy="20" r="10" stroke="#00f5d4" stroke-width="1"/>
+                    <circle cx="20" cy="20" r="3" fill="#00f5d4"/>
+                    <line x1="20" y1="2" x2="20" y2="10" stroke="#00f5d4" stroke-width="1.5"/>
+                    <line x1="20" y1="30" x2="20" y2="38" stroke="#00f5d4" stroke-width="1.5"/>
+                    <line x1="2" y1="20" x2="10" y2="20" stroke="#00f5d4" stroke-width="1.5"/>
+                    <line x1="30" y1="20" x2="38" y2="20" stroke="#00f5d4" stroke-width="1.5"/>
+                </svg>
+            </div>
+            <div class="logo-text">
+                <span class="logo-main">MOTORSENSE</span>
+                <span class="logo-sub">VIBRATION ANALYSIS SYSTEM <span class="version">v2.4.1</span></span>
+            </div>
+        </div>
+        <div class="status-bar">
+            <span class="status-dot"></span>
+            <span class="status-text">SYSTEM ONLINE</span>
+            <span class="divider">|</span>
+            <span class="status-text">ML ENGINE READY</span>
+            <span class="divider">|</span>
+            <span class="status-text" id="clock"></span>
+        </div>
+    </header>
+
+    <main class="main">
+
+        <div class="panel-label">◤ SIGNAL INPUT PARAMETERS ◥</div>
+
+        <form action="/predict" method="POST" class="form-grid" id="predict-form">
+
+            <div class="form-row">
+                <div class="input-group" data-index="0">
+                    <div class="input-header">
+                        <span class="input-icon">◈</span>
+                        <label>Peak</label>
+                        <span class="unit-tag">V·pk</span>
+                    </div>
+                    <div class="input-wrap">
+                        <input type="number" step="any" name="peak" placeholder="0.000000" required autocomplete="off">
+                        <div class="input-bar"></div>
+                    </div>
+                    <div class="input-hint">Maximum signal amplitude</div>
+                </div>
+
+                <div class="input-group" data-index="1">
+                    <div class="input-header">
+                        <span class="input-icon">◈</span>
+                        <label>RMS Value</label>
+                        <span class="unit-tag">V·rms</span>
+                    </div>
+                    <div class="input-wrap">
+                        <input type="number" step="any" name="rms" placeholder="0.000000" required autocomplete="off">
+                        <div class="input-bar"></div>
+                    </div>
+                    <div class="input-hint">Root Mean Square amplitude</div>
+                </div>
+
+                <div class="input-group" data-index="2">
+                    <div class="input-header">
+                        <span class="input-icon">◈</span>
+                        <label>Mean</label>
+                        <span class="unit-tag">μ</span>
+                    </div>
+                    <div class="input-wrap">
+                        <input type="number" step="any" name="mean" placeholder="0.000000" required autocomplete="off">
+                        <div class="input-bar"></div>
+                    </div>
+                    <div class="input-hint">Statistical mean of signal</div>
+                </div>
+
+                <div class="input-group" data-index="3">
+                    <div class="input-header">
+                        <span class="input-icon">◈</span>
+                        <label>Standard Deviation</label>
+                        <span class="unit-tag">σ</span>
+                    </div>
+                    <div class="input-wrap">
+                        <input type="number" step="any" name="std" placeholder="0.000000" required autocomplete="off">
+                        <div class="input-bar"></div>
+                    </div>
+                    <div class="input-hint">Signal variability measure</div>
+                </div>
+            </div>
+
+            <div class="submit-row">
+                <div class="waveform">
+                    <canvas id="wave-canvas" width="300" height="50"></canvas>
+                </div>
+                <button type="submit" class="btn-predict" id="predict-btn">
+                    <span class="btn-glow"></span>
+                    <span class="btn-icon">⬡</span>
+                    <span class="btn-text">RUN FAULT ANALYSIS</span>
+                    <span class="btn-arrow">→</span>
+                </button>
+            </div>
+
+        </form>
+
+        <div class="info-strip">
+            <div class="info-item">
+                <span class="info-label">MODEL</span>
+                <span class="info-value">Random Forest Classifier</span>
+            </div>
+            <div class="info-item">
+                <span class="info-label">FEATURES</span>
+                <span class="info-value">4 Vibration Parameters</span>
+            </div>
+            <div class="info-item">
+                <span class="info-label">CLASSES</span>
+                <span class="info-value">Normal · Inner Race · Outer Race</span>
+            </div>
+            <div class="info-item">
+                <span class="info-label">INFERENCE</span>
+                <span class="info-value">Real-time · &lt;5ms</span>
+            </div>
+        </div>
+
+    </main>
+</div>
+
+<script>
+    function updateClock() {
+        const now = new Date();
+        document.getElementById('clock').textContent =
+            now.toLocaleTimeString('en-US', { hour12: false });
+    }
+    updateClock();
+    setInterval(updateClock, 1000);
+
+    const canvas = document.getElementById('wave-canvas');
+    const ctx = canvas.getContext('2d');
+    let t = 0;
+    function drawWave() {
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+        ctx.strokeStyle = '#00f5d4';
+        ctx.lineWidth = 1.5;
+        ctx.shadowBlur = 8;
+        ctx.shadowColor = '#00f5d4';
+        ctx.beginPath();
+        for (let x = 0; x < canvas.width; x++) {
+            const y = 25 + 12 * Math.sin((x / 20) + t) * Math.sin((x / 60) + t * 0.3) + 4 * Math.sin((x / 8) + t * 2.1);
+            x === 0 ? ctx.moveTo(x, y) : ctx.lineTo(x, y);
+        }
+        ctx.stroke();
+        t += 0.04;
+        requestAnimationFrame(drawWave);
+    }
+    drawWave();
+
+    document.querySelectorAll('.input-group input').forEach(input => {
+        input.addEventListener('focus', function() {
+            this.closest('.input-group').classList.add('active');
+        });
+        input.addEventListener('blur', function() {
+            this.closest('.input-group').classList.remove('active');
+            if (this.value) this.closest('.input-group').classList.add('filled');
+            else this.closest('.input-group').classList.remove('filled');
+        });
+    });
+
+    document.getElementById('predict-form').addEventListener('submit', function() {
+        const btn = document.getElementById('predict-btn');
+        btn.classList.add('loading');
+        btn.querySelector('.btn-text').textContent = 'ANALYZING...';
+    });
+</script>
+</body>
+</html>

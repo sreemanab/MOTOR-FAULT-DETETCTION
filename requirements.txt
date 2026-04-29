@@ -1,0 +1,18 @@
+PIVOTS = {
+    'axis1':   ( 0.22, -0.31, -0.32),   # top of base
+    'axis2':   ( 0.22, 0, -0.32),   # shoulder
+    'axis3':   ( 0.7,  2.2  , -1.8),   # elbow
+    'axis4':   ( .7,  3, -.7),   # wrist pitch
+    'axis5':   (-1.95,  0.15,  1.64),   # wrist rotate
+    'gripper': (-1.34, -0.03,  1.97),   # gripper
+}
+
+# Rotation axes per joint
+ROT_AXES = {
+    'axis1':   (0, 1, 0),   # base spins around Y
+    'axis2':   (1, 0, 0.66),   # shoulder pitches around Z
+    'axis3':   (1, 0, 0.66),   # elbow around Z
+    'axis4':   (-.73, -1.2, .75),   # wrist pitch around X
+    'axis5':   (1, 0, 0.66),   # wrist rotate around Y
+    'gripper': (0, 1, 0),   # gripper rotate
+}
